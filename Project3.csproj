@@ -53,6 +53,7 @@
     <Compile Include="CandleStickGraph.Designer.cs">
       <DependentUpon>CandleStickGraph.cs</DependentUpon>
     </Compile>
+    <Compile Include="aCandleStick.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
