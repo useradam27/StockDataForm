@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -16,6 +15,7 @@ namespace Project3
     public partial class Form1 : Form
     {
         private string[] csvText = Properties.Resources.SP500.Split('\n');
+        private List<aCandleStick> allCandleSticks;
 
         public Form1()
         {
@@ -32,13 +32,14 @@ namespace Project3
             string[] lines = responseFromServer.Split(',');
             richTextBox1.Text = responseFromServer;
             */
-
+            
             foreach (string s in csvText)
             {
                 string[] values = s.Split(',');
-                Console.WriteLine(values[0]);
+                //Console.WriteLine(values[0]);
                 ticker_box.Items.Add(values[0]);
             }
+            
 
             DateTime t = dateTimePicker1.Value;
             long unixTime = ((DateTimeOffset)t).ToUnixTimeSeconds();
@@ -79,11 +80,33 @@ namespace Project3
             Stream dataStream = response.GetResponseStream();
             StreamReader reader = new StreamReader(dataStream);
             string responseFromServer = reader.ReadToEnd();
-            string[] lines = responseFromServer.Split(',');
-            richTextBox1.Text = responseFromServer;
+            string[] lines = responseFromServer.Split('\n');
+
+            allCandleSticks = new List<aCandleStick>();
+
+            int count = 0;
+            foreach (string s in lines)
+            {
+                if (count != 0)
+                {
+                    string[] text = s.Split(',');
+                    //richTextBox1.Text += text[0] + "   " + text[1] + "   " + text[2] + "   " + text[3] + "   " + text[4] + "\n";
+                    aCandleStick temp = new aCandleStick(text[0], Convert.ToDouble(text[1]), Convert.ToDouble(text[2]), Convert.ToDouble(text[3]), Convert.ToDouble(text[4]));
+                    richTextBox1.Text += temp.printCandleData();
+                    allCandleSticks.Add(temp);
+                }
+                count++;
+
+            }
+            
 
             reader.Close();
             dataStream.Close();
+
+            Form graphForm = new CandleStickGraph(allCandleSticks);
+            graphForm.Show();
+
+            
         }
     }
 }
