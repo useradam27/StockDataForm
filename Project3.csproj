@@ -47,7 +47,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="aTicker.cs" />
     <Compile Include="CandleStickGraph.cs">
       <SubType>Form</SubType>
     </Compile>

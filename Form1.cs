@@ -12,40 +12,40 @@ using System.Windows.Forms;
 
 namespace Project3
 {
+    /// <summary>
+    /// Main form for program
+    /// </summary>
     public partial class Form1 : Form
     {
+        /// <summary>
+        /// holds all text from csv file that holds tickers info
+        /// </summary>
         private string[] csvText = Properties.Resources.SP500.Split('\n');
+
+        /// <summary>
+        /// holds all information to graph candlesticks
+        /// </summary>
         private List<aCandleStick> allCandleSticks;
 
         public Form1()
         {
-            //WebClient wc = new WebClient();
             
             InitializeComponent();
-            /*
-            string testURL = "https://query1.finance.yahoo.com/v7/finance/download/TSLA?period1=1606071921&period2=1637607921&interval=1wk&events=history&includeAdjustedClose=true";
-            WebRequest request = WebRequest.Create(testURL);
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            Stream dataStream = response.GetResponseStream();
-            StreamReader reader = new StreamReader(dataStream);
-            string responseFromServer = reader.ReadToEnd();
-            string[] lines = responseFromServer.Split(',');
-            richTextBox1.Text = responseFromServer;
-            */
             
             foreach (string s in csvText)
             {
                 string[] values = s.Split(',');
-                //Console.WriteLine(values[0]);
                 ticker_box.Items.Add(values[0]);
             }
-            
 
-            DateTime t = dateTimePicker1.Value;
-            long unixTime = ((DateTimeOffset)t).ToUnixTimeSeconds();
-            Console.WriteLine(unixTime);
+            intervalBox.SelectedIndex = 1;
+           
         }
 
+        /// <summary>
+        /// creates link to get stock infromation from
+        /// </summary>
+        /// <returns>string value for entire link</returns>
         public string createLink()
         {
             string link = "https://query1.finance.yahoo.com/v7/finance/download/";
@@ -63,7 +63,14 @@ namespace Project3
 
             link += unixTime2;
 
-            link += "&interval=1wk&events=history&includeAdjustedClose=true";
+            link += "&interval=";
+            if (intervalBox.Text == "1 day")
+                link += "1d";
+            else if (intervalBox.Text == "1 week")
+                link += "1wk";
+            else if (intervalBox.Text == "1 month")
+                link += "1mo";
+            link += "&events=history&includeAdjustedClose=true";
 
             return link;
 
@@ -71,11 +78,16 @@ namespace Project3
 
         }
 
+        /// <summary>
+        /// Creates link, and gets data from link.  Launches Graph form with data to plot.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button1_Click(object sender, EventArgs e)
-        {
-            //string testURL = "https://query1.finance.yahoo.com/v7/finance/download/TSLA?period1=1606435200&period2=1637971200&interval=1wk&events=history&includeAdjustedClose=true";
-            string testURL = createLink();
-            WebRequest request = WebRequest.Create(testURL);
+        { 
+            //gets data from link
+            string URL = createLink();
+            WebRequest request = WebRequest.Create(URL);
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             Stream dataStream = response.GetResponseStream();
             StreamReader reader = new StreamReader(dataStream);
@@ -84,15 +96,14 @@ namespace Project3
 
             allCandleSticks = new List<aCandleStick>();
 
+            //puts data into aCandleStick List
             int count = 0;
             foreach (string s in lines)
             {
                 if (count != 0)
                 {
                     string[] text = s.Split(',');
-                    //richTextBox1.Text += text[0] + "   " + text[1] + "   " + text[2] + "   " + text[3] + "   " + text[4] + "\n";
                     aCandleStick temp = new aCandleStick(text[0], Convert.ToDouble(text[1]), Convert.ToDouble(text[2]), Convert.ToDouble(text[3]), Convert.ToDouble(text[4]));
-                    richTextBox1.Text += temp.printCandleData();
                     allCandleSticks.Add(temp);
                 }
                 count++;
@@ -103,6 +114,7 @@ namespace Project3
             reader.Close();
             dataStream.Close();
 
+            //generates graph
             Form graphForm = new CandleStickGraph(allCandleSticks);
             graphForm.Show();
 
